@@ -12,5 +12,11 @@ type Props = {
 export const LIFFProvider = ({ children, liffId }: Props) => {
   const value = useLIFFContextValue({ liffId })
 
-  return <liffContext.Provider value={value}>{children}</liffContext.Provider>
+  return value.isReady ? (
+    <liffContext.Provider value={value}>{children}</liffContext.Provider>
+  ) : (
+    <div className="flex h-screen items-center justify-center">
+      <p className="text-lg text-gray-500">Loading LIFF...</p>
+    </div>
+  )
 }
