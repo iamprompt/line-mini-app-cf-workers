@@ -1,0 +1,1 @@
+ALTER TABLE `service_messages` ADD `session_id` text NOT NULL;

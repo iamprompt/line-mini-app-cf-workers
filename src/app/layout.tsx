@@ -6,6 +6,8 @@ import { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 import { fonts } from '@/styles/fonts'
 
+import { LIFFProviders } from './providers'
+
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
@@ -26,7 +28,11 @@ type Props = Readonly<{
 const RootLayout = ({ children }: Props) => {
   return (
     <html lang="th" className={cn(fonts)}>
-      <body className={cn('antialiased')}>{children}</body>
+      <body className={cn('antialiased')}>
+        <LIFFProviders liffId={process.env.NEXT_PUBLIC_MINI_LIFF_ID}>
+          {children}
+        </LIFFProviders>
+      </body>
     </html>
   )
 }

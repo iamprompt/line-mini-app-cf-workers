@@ -15,6 +15,27 @@
       "when": 1755780941764,
       "tag": "0001_opposite_unicorn",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1755793325861,
+      "tag": "0002_panoramic_franklin_storm",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1755793504924,
+      "tag": "0003_clean_toxin",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1755793529458,
+      "tag": "0004_sticky_joseph",
+      "breakpoints": true
     }
   ]
 }
