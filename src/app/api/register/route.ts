@@ -1,16 +1,8 @@
-import dayjs from 'dayjs'
-import { eq } from 'drizzle-orm'
 import { flattenError } from 'zod'
 
 import { getDatabase } from '@/lib/db'
 import { registrations } from '@/lib/db/schema/registrations'
-import { serviceMessages } from '@/lib/db/schema/serviceMessages'
-import { issueStatelessChannelAccessToken } from '@/lib/line/accessToken'
 import { getUserProfile, verifyAccessToken } from '@/lib/line/login'
-import {
-  issueServiceNotificationToken,
-  sendServiceMessage,
-} from '@/lib/line/mini'
 
 import { RegisterBodySchema } from './schema'
 
@@ -38,10 +30,11 @@ export const POST = async (request: Request) => {
 
   const db = await getDatabase()
 
-  const existingRegistration = await db
-    .select()
-    .from(registrations)
-    .where(eq(registrations.lineUserId, profile.userId))
+  // Uncomment the following lines if you want to check for existing registrations
+  // const existingRegistration = await db
+  //   .select()
+  //   .from(registrations)
+  //   .where(eq(registrations.lineUserId, profile.userId))
 
   // if (existingRegistration.length > 0) {
   //   return Response.json({ error: 'User already registered' }, { status: 409 })
@@ -62,59 +55,49 @@ export const POST = async (request: Request) => {
     return Response.json({ error: 'Failed to register user' }, { status: 500 })
   }
 
-  const statelessToken = await issueStatelessChannelAccessToken()
+  // TODO: Issue stateless channel access token
+  // const statelessToken =
 
-  const serviceNotificationTokenResponse = await issueServiceNotificationToken(
-    statelessToken,
-    accessToken,
-  )
+  // TODO: Issue service notification token
+  // const serviceNotificationTokenResponse = ?
 
-  if (!serviceNotificationTokenResponse) {
-    return Response.json(
-      { error: 'Failed to issue service notification token' },
-      { status: 500 },
-    )
-  }
+  // if (!serviceNotificationTokenResponse) {
+  //   return Response.json(
+  //     { error: 'Failed to issue service notification token' },
+  //     { status: 500 },
+  //   )
+  // }
 
-  const [serviceMessageRecord] = await db
-    .insert(serviceMessages)
-    .values({
-      registrationId: newRegistration.id,
-      remainingCount: serviceNotificationTokenResponse.remainingCount,
-      sessionId: serviceNotificationTokenResponse.sessionId,
-      expiresAt: new Date(
-        Date.now() + serviceNotificationTokenResponse.expiresIn * 1000,
-      ),
-      notificationToken: serviceNotificationTokenResponse.notificationToken,
-    })
-    .returning()
+  // const [serviceMessageRecord] = await db
+  //   .insert(serviceMessages)
+  //   .values({
+  //     registrationId: newRegistration.id,
+  //     remainingCount: serviceNotificationTokenResponse.remainingCount,
+  //     sessionId: serviceNotificationTokenResponse.sessionId,
+  //     expiresAt: new Date(
+  //       Date.now() + serviceNotificationTokenResponse.expiresIn * 1000,
+  //     ),
+  //     notificationToken: serviceNotificationTokenResponse.notificationToken,
+  //   })
+  //   .returning()
 
-  if (!serviceMessageRecord || !serviceMessageRecord.notificationToken) {
-    return Response.json(
-      { error: 'Failed to create service message record' },
-      { status: 500 },
-    )
-  }
+  // if (!serviceMessageRecord || !serviceMessageRecord.notificationToken) {
+  //   return Response.json(
+  //     { error: 'Failed to create service message record' },
+  //     { status: 500 },
+  //   )
+  // }
 
-  const sentServiceMessage = await sendServiceMessage(
-    statelessToken,
-    serviceMessageRecord.notificationToken,
-    'join_d_m_en',
-    {
-      btn1_url: 'https://line.me',
-      entry_date: newRegistration.createdAt
-        ? dayjs(newRegistration.createdAt).format('YYYY-MM-DD HH:mm')
-        : 'N/A',
-    },
-  )
+  // TODO: Add function to send service message
+  // const sentServiceMessage =
 
-  await db
-    .update(serviceMessages)
-    .set({
-      remainingCount: sentServiceMessage.remainingCount,
-      notificationToken: sentServiceMessage.notificationToken,
-    })
-    .where(eq(serviceMessages.sessionId, serviceMessageRecord.sessionId))
+  // await db
+  //   .update(serviceMessages)
+  //   .set({
+  //     remainingCount: sentServiceMessage.remainingCount,
+  //     notificationToken: sentServiceMessage.notificationToken,
+  //   })
+  //   .where(eq(serviceMessages.sessionId, serviceMessageRecord.sessionId))
 
   return Response.json({
     message: 'User registered successfully',
