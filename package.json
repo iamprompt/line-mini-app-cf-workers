@@ -10,7 +10,8 @@
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "deploy:preview": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "cf-typegen": "wrangler types --env-interface CloudflareEnv ./cloudflare-env.d.ts"
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv ./cloudflare-env.d.ts",
+    "migrate-db": "wrangler d1 migrations apply mini_app_demo --remote true"
   },
   "packageManager": "pnpm@10.14.0",
   "dependencies": {
