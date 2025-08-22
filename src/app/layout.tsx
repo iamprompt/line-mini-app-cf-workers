@@ -17,8 +17,8 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: 'TicketO Demo',
-  description: 'A demo app for TicketO',
+  title: 'LINE MINI App Demo',
+  description: 'A demo app for LINE MINI App',
 }
 
 type Props = Readonly<{
