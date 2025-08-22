@@ -20,7 +20,7 @@
     {
       "binding": "DB",
       "database_name": "mini_app_demo",
-      "database_id": "0e4d9a2d-c06b-4b5d-8129-ad0752b8b5ea",
+      "database_id": "1e20ff54-73a0-407c-a010-466548f7a376",
       "migrations_dir": "./drizzle",
     },
   ],
