@@ -1,8 +1,15 @@
+import { eq } from 'drizzle-orm'
 import { flattenError } from 'zod'
 
 import { getDatabase } from '@/lib/db'
 import { registrations } from '@/lib/db/schema/registrations'
+import { serviceMessages } from '@/lib/db/schema/serviceMessages'
+import { issueStatelessChannelAccessToken } from '@/lib/line/accessToken'
 import { getUserProfile, verifyAccessToken } from '@/lib/line/login'
+import {
+  issueServiceNotificationToken,
+  sendServiceMessage,
+} from '@/lib/line/mini'
 
 import { RegisterBodySchema } from './schema'
 
@@ -55,49 +62,60 @@ export const POST = async (request: Request) => {
     return Response.json({ error: 'Failed to register user' }, { status: 500 })
   }
 
-  // TODO: Issue stateless channel access token
-  // const statelessToken =
+  // Issue stateless channel access token
+  const statelessToken = await issueStatelessChannelAccessToken()
 
-  // TODO: Issue service notification token
-  // const serviceNotificationTokenResponse = ?
+  // Issue service notification token
+  const serviceNotificationTokenResponse = await issueServiceNotificationToken(
+    statelessToken,
+    accessToken,
+  )
 
-  // if (!serviceNotificationTokenResponse) {
-  //   return Response.json(
-  //     { error: 'Failed to issue service notification token' },
-  //     { status: 500 },
-  //   )
-  // }
+  if (!serviceNotificationTokenResponse) {
+    return Response.json(
+      { error: 'Failed to issue service notification token' },
+      { status: 500 },
+    )
+  }
 
-  // const [serviceMessageRecord] = await db
-  //   .insert(serviceMessages)
-  //   .values({
-  //     registrationId: newRegistration.id,
-  //     remainingCount: serviceNotificationTokenResponse.remainingCount,
-  //     sessionId: serviceNotificationTokenResponse.sessionId,
-  //     expiresAt: new Date(
-  //       Date.now() + serviceNotificationTokenResponse.expiresIn * 1000,
-  //     ),
-  //     notificationToken: serviceNotificationTokenResponse.notificationToken,
-  //   })
-  //   .returning()
+  const [serviceMessageRecord] = await db
+    .insert(serviceMessages)
+    .values({
+      registrationId: newRegistration.id,
+      remainingCount: serviceNotificationTokenResponse.remainingCount,
+      sessionId: serviceNotificationTokenResponse.sessionId,
+      expiresAt: new Date(
+        Date.now() + serviceNotificationTokenResponse.expiresIn * 1000,
+      ),
+      notificationToken: serviceNotificationTokenResponse.notificationToken,
+    })
+    .returning()
 
-  // if (!serviceMessageRecord || !serviceMessageRecord.notificationToken) {
-  //   return Response.json(
-  //     { error: 'Failed to create service message record' },
-  //     { status: 500 },
-  //   )
-  // }
+  if (!serviceMessageRecord || !serviceMessageRecord.notificationToken) {
+    return Response.json(
+      { error: 'Failed to create service message record' },
+      { status: 500 },
+    )
+  }
 
-  // TODO: Add function to send service message
-  // const sentServiceMessage =
+  // Add function to send service message
+  const sentServiceMessage = await sendServiceMessage(
+    statelessToken,
+    serviceNotificationTokenResponse.notificationToken,
+    'join_d_m_th',
+    {
+      btn1_url: 'https://line.me',
+      entry_date: '31/03/2033 0:00 น.',
+    },
+  )
 
-  // await db
-  //   .update(serviceMessages)
-  //   .set({
-  //     remainingCount: sentServiceMessage.remainingCount,
-  //     notificationToken: sentServiceMessage.notificationToken,
-  //   })
-  //   .where(eq(serviceMessages.sessionId, serviceMessageRecord.sessionId))
+  await db
+    .update(serviceMessages)
+    .set({
+      remainingCount: sentServiceMessage.remainingCount,
+      notificationToken: sentServiceMessage.notificationToken,
+    })
+    .where(eq(serviceMessages.sessionId, serviceMessageRecord.sessionId))
 
   return Response.json({
     message: 'User registered successfully',
